@@ -58,7 +58,7 @@ func slackStart(token string) (wsurl, id string, err error) {
 	return
 }
 
-//Message These are the messages read off and written into the websocket. Since this
+// Message These are the messages read off and written into the websocket. Since this
 // struct serves as both read and write, we include the "Id" field which is
 // required only for writing.
 type Message struct {
