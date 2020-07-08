@@ -8,6 +8,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"errors"
+	"net/http"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
@@ -31,10 +35,12 @@ func main() {
 		if m.Type == "message" && strings.HasPrefix(m.Text, "<@"+id+">") {
 			// if so try to parse if
 			parts := strings.Fields(m.Text)
+			fmt.Println(parts[1])
 			if len(parts) == 3 && parts[1] == "info" {
 				// looks good, get the quote and reply with the result
 				go func(m Message) {
-					m.Text = getQuote(parts[2])
+					// m.Text = getQuote(parts[2])
+					 m.Text = getCTF()
 					postMessage(ws, m)
 				}(m)
 				// NOTE: the Message object is copied, this is intentional
@@ -45,6 +51,10 @@ func main() {
 			}
 		}
 	}
+}
+
+func noRedirect(req *http.Request, via []*http.Request) error {
+	return errors.New("!")
 }
 
 // Users struct which contains
@@ -69,22 +79,7 @@ type Social struct {
     Twitter  string `json:"twitter"`
 }
 
-// Get the quote via Yahoo. You should replace this method to something
-// relevant to your team!
 func getQuote(sym string) string {
-	// url := fmt.Sprintf("http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=nsl1op&e=.csv", sym)
-	// resp, err := http.Get(url)
-	// if err != nil {
-	// 	return fmt.Sprintf("error: %v", err)
-	// }
-	// rows, err := csv.NewReader(resp.Body).ReadAll()
-	// if err != nil {
-	// 	return fmt.Sprintf("error: %v", err)
-	// }
-	// if len(rows) >= 1 && len(rows[0]) == 5 {
-	// 	return fmt.Sprintf("%s (%s) is trading at $%s", rows[0][0], rows[0][1], rows[0][2])
-	// }
-	// return fmt.Sprintf("unknown response format (symbol was \"%s\")", sym)
 	jsonFile,err := os.Open("users.json")
 	if err != nil {
 		fmt.Println(err)
@@ -98,5 +93,26 @@ func getQuote(sym string) string {
 	json.Unmarshal(byteValue, &users)
 
 	n,_ := strconv.Atoi(sym)
-	return fmt.Sprintf("Name: %s \n and Nickname: %s",users.Users[n].Name, users.Users[n].Type)
+	return fmt.Sprintf("Name: %s \nNickname: %s",users.Users[n].Name, users.Users[n].Type)
+}
+
+func getCTF() (string) {
+	client := &http.Client{
+		CheckRedirect: noRedirect,
+	}
+	req, _ := http.NewRequest("GET", "https://ctftime.org/", nil)
+	req.Header.Add("Accept", `text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8`)
+	req.Header.Add("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11`)
+	resp, _ := client.Do(req)
+	doc, _ := goquery.NewDocumentFromReader(resp.Body)
+	var result string
+	doc.Find("table.upcoming-events").Each(func(index int, tablehtml *goquery.Selection) {
+		if index == 0 {
+			result = fmt.Sprintf("Here's the list, %s",tablehtml.Text())
+			fmt.Println(result)
+		}
+	})
+
+	return result
+
 }
