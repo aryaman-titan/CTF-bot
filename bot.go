@@ -40,7 +40,7 @@ func main() {
 				// looks good, get the quote and reply with the result
 				go func(m Message) {
 					// m.Text = getQuote(parts[2])
-					 m.Text = getCTF()
+					 m.Text = scrapper.GetCTFs()
 					postMessage(ws, m)
 				}(m)
 				// NOTE: the Message object is copied, this is intentional
