@@ -31,7 +31,7 @@ func main() {
 			// if so try to parse if
 			parts := strings.Fields(m.Text)
 			fmt.Println(parts)
-			if len(parts) == 3 && parts[1] == "info" && parts[2] == "upcomingCTF" {
+			if len(parts) == 3 && strings.ToLower(parts[1]) == "info" && strings.ToLower(parts[2]) == "upcomingctf" {
 				// looks good, get the quote and reply with the result
 				go func(m Message) {
 					m.Text = jsonCtfFormat(scrapper.GetCTFs())
@@ -54,7 +54,7 @@ func jsonCtfFormat(byteValue []byte) string {
 
 	result := ""
 	for i := 0; i < len(CTFLists); i++ {
-		result += fmt.Sprintf("Name: %s\nDate: %s\nDuration: %s\n\n", CTFLists[i].Name, CTFLists[i].Date, CTFLists[i].Duration)
+		result += fmt.Sprintf("*Name*: %s\n*Date*: %s\n*Duration*: %s\n\n", CTFLists[i].Name, CTFLists[i].Date, CTFLists[i].Duration)
 		fmt.Println(result)
 	}
 
