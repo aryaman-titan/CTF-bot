@@ -1,12 +1,13 @@
 package main
 
 import (
-	"./scrapper"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+
+	"./scrapper"
 )
 
 func main() {
@@ -32,7 +33,7 @@ func main() {
 			parts := strings.Fields(m.Text)
 			fmt.Println(parts)
 			if len(parts) == 3 && strings.ToLower(parts[1]) == "info" && strings.ToLower(parts[2]) == "upcomingctf" {
-				// looks good, get the quote and reply with the result
+				// looks good, get the upcoming ctfs and reply with the result
 				go func(m Message) {
 					m.Text = jsonCtfFormat(scrapper.GetCTFs())
 					fmt.Println(m.Text)
